@@ -1,0 +1,54 @@
+<h1>Manage#STORIES</h1>
+<div class="container load_data">
+  <select class="menudropdown"> </select>
+  <ul></ul>
+  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addMenu">Add</button>
+  <div id="addMenu" onclick="return dropdwn();" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="addform" action="">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add Stories</h4>
+          </div>
+          <div class="modal-body">
+            <div class="load_data"><select id="menuid" value=<% @category.name %>></select>
+              <div class="error-row"></div>
+              <br>
+            </div>
+            <input type="text" name="name" class="floating-item-input input-item"  />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default modalclose" data-dismiss="modal">Close</button>
+            <input type="reset" name="Reset" class="btn btn-primary" value="Reset" />
+            <input type="button" name="" class="btn btn-primary add" value="Add Brand" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<% content_for :js do %>
+  callApiService("<%= menu_index_path %>",'GET','',dropDownCallback);
+  $(document).on('click', '.remove', function(event) {
+  var removeId = this.getAttribute('remove-id');
+  var requestUrl = "<%= category_destroy_path %>"
+  callApiService(requestUrl,"DELETE",JSON.stringify({'id':removeId}),false,this);      
+  });
+  $(document).on('click', '.edit', function(event) {
+  var editId = this.getAttribute('edit-id');
+  var requestUrl = "<%= category_update_path %>";
+  var editform = "#editform"+editId;       
+  var name = $(this).closest('form').find('input[name="name"]').val();
+  var data = {'name':name, 'id':editId}
+  callApiService(requestUrl,'PUT',JSON.stringify(data),triggerChangeEvent);
+  });
+  $(document).on('click', '.add', function(event) {
+  var requestUrl = "<%= category_create_path %>";
+  var name = $(this).closest('form').find('input[name="name"]').val();
+  var e = document.getElementById("menuid");
+  var menuid = e.options[e.selectedIndex].value;
+  var data = {'name':name, 'menuid':menuid}
+  callApiService(requestUrl,'POST',JSON.stringify(data),triggerChangeEvent);	    
+  });	
+<% end %>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <style type="text/css">
+      .modal {
+        text-align: center;
+        padding: 0!important;
+      }
+      
+      .modal:before {
+        content: '';
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+        margin-right: -4px;
+      }
+      
+      .modal-dialog {
+        display: inline-block;
+        text-align: left;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body class="hold-transition skin-<%=@color%> sidebar-mini">
+    <% unless @skip_menu %>
+      <div class="wrapper">
+        <div class="content-wrapper">
+          <%= yield %>
+        </div>
+      </div>
+    <% else %>
+      <%= yield %>
+    <% end %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <script type="text/javascript">
+      $(document).ready(function() {
+      
+          function Callback(data)
+          {
+            $("ul").empty();
+            $.each(data, function(index){
+              var remove, edit;
+              remove = '<a href="javascript:void(0);" class="remove" remove-id ="'+data[index].id+'">Remove</a>'
+              edit = '<button type="button" data-toggle="modal" data-target="#edit'+data[index].id+'">Edit</button>'
+              edit_modal = '<div class="modal fade" id="edit'+data[index].id+'" role="dialog"><div class="modal-dialog"><div class="modal-content"><form id="editform'+data[index].id+'" action=""><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Edit Brand</h4></div><div class="modal-body"><input type="text" name="name" class="floating-item-input input-item" value="'+data[index].name+'" /><div class="error-row"></div></div><div class="modal-footer"><button type="button" class="btn btn-default modalclose" data-dismiss="modal">Close</button><input type="reset" name="Reset" class="btn btn-primary" value="Reset" /><input type="button" name="" class="btn btn-primary edit" edit-id="'+data[index].id+'" value="Save changes" /></div></form</div></div></div>';
+              $(".load_data ul").append("<li> id: " + data[index].id + "----name: " + data[index].name + remove + edit +"</li>"+edit_modal+"");
+            });
+          }
+      
+      
+          function callApiService(requestUrl,type,data=false,callbackfn=false,this_var=false,redirect_url=false) {
+            if(this_var)
+              var this_var = $(this_var);
+      
+            $.ajax({
+                type: type,
+                url: requestUrl,
+                data: data,
+                "headers": {
+                  "content-type": "application/json",
+                },
+                success: function (response) {
+           // x = JSON.stringify(response);
+         //         alert(x);
+      
+                    if(type=='DELETE')
+                      this_var.parents('li').remove();
+      
+      
+                    if(type=='GET')
+                        callbackfn(response)
+      
+                    if(type=='POST'){
+                      if(redirect_url&&callbackfn){
+                          setTimeout(function(){
+                              callApiService(redirect_url,'GET','',callbackfn,this);
+                                for (var key in response) {
+                                  $('#err').addClass('.error-row').css('display', 'block').text(key + ' : ' + response[key]);
+                                }
+                              $('.close').trigger( "click" );
+                          }, 500);
+                      }else if(callbackfn){
+                        callbackfn(response);
+                        $('.close').trigger( "click" );
+                      }
+                    }
+      
+                    if(type=='PUT'){
+                      if(redirect_url&&callbackfn){
+                          setTimeout(function(){
+                              callApiService(redirect_url,'GET','',callbackfn,this);
+                                for (var key in response) {
+                                  $('#err').addClass('.error-row').css('display', 'block').text(key + ' : ' + response[key]);
+                                }
+                              $('.modal-backdrop').hide();
+                          }, 500);
+                      }else if(callbackfn){
+                        callbackfn(response);
+                        $('.modal-backdrop').hide();
+                      }
+                    }
+                },
+                error: function (response) {
+                    return 'error'
+                }
+            });
+          }
+      
+          $('.modal').on('hidden.bs.modal', function () {
+              $(this).find('form').trigger('reset');
+          });
+      
+          $('.close').click(function(){
+            $('.modal').modal('hide');
+          });
+      
+          function triggerChangeEvent(data) {
+            $(".menudropdown").trigger('change');
+          }
+      
+          function dropDownCallback(data) {
+            $("select").empty();
+      
+            $(".load_data select").append('<option value="">Choose Option</option>');
+      
+            $.each(data, function(index){
+              $(".load_data select").append("<option value='" + data[index].id + "'>" + data[index].name + "</option>");
+            });
+          }
+      
+          $(".menudropdown").change(function () {
+            var menuid = this.value;
+            var requestUrl = "<%= categorybymenu_path(id: 'device_id') %>";
+            requestUrl = requestUrl.replace('device_id',menuid);
+            if(menuid)
+              callApiService(requestUrl,"GET",'',Callback);
+          });
+      
+      
+      
+          <%= yield :js %>
+      
+      
+      });
+    </script>
+  </body>
+</html>

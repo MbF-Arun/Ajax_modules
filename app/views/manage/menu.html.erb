@@ -1,0 +1,54 @@
+<h1>Manage#Brands</h1>
+<div class="container load_data">
+  <div id="err"></div>
+  <ul></ul>
+  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addMenu">Add</button>
+  <div id="addMenu" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="addform" action="">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add Brand</h4>
+          </div>
+          <div class="modal-body">
+            <input type="text" name="name" class="floating-item-input input-item" value="" />
+            <div class="error-row"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default modalclose" data-dismiss="modal">Close</button>
+            <input type="reset" name="Reset" class="btn btn-primary" value="Reset" />
+            <input type="button" name="" class="btn btn-primary add" value="Add Brand" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<% content_for :js do %>
+  callApiService("<%= menu_index_path %>",'GET','',Callback);
+  $(document).on('click', '.remove', function(event) {
+  var removeId = this.getAttribute('remove-id');
+  var requestUrl = "<%= menu_destroy_path %>"
+  callApiService(requestUrl,"DELETE",JSON.stringify({'id':removeId}),false,this);      
+  });
+  $(document).on('click', '.edit', function(event) {
+  var editId = this.getAttribute('edit-id');
+  var requestUrl = "<%= menu_update_path %>";
+  var editform = "#editform"+editId;       
+  var name = $(this).closest('form').find('input[name="name"]').val();
+  var data = {'name':name, 'id':editId}
+  callApiService(requestUrl,'PUT',JSON.stringify(data),Callback,this,"<%= menu_index_path %>");
+  });
+  $(document).on('click', '.add', function(event) {
+  var requestUrl = "<%= menu_create_path %>";
+  var name = $(this).closest('form').find('input[name="name"]').val();
+  var data = {'name':name}
+  if(name==""){
+  return false;
+  }
+  else {
+  callApiService(requestUrl,'POST',JSON.stringify(data),Callback,this,"<%= menu_index_path %>");
+  }
+  }); 
+<%end%>

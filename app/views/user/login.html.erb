@@ -1,0 +1,15 @@
+<div class="container">
+	<div class="login-container">
+            <div id="output"></div>
+            <div class="avatar"></div>
+            <div class="logindesc"> <b> ShopOwner | Backoffice </b></div>
+            <div class="form-box">
+                <form  method="post" id="loginForm" action="<%= user_login_path %>" onsubmit="return loginValidation();">
+                    <input name="soid" type="number" placeholder="ShopOwner ID">
+                    <input type="passcode" name="passcode" placeholder="Passcode">
+                    <button class="btn btn-block login" type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+        
+</div>
